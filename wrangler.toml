@@ -1,0 +1,13 @@
+name = "yybbq"
+main = "worker.py"
+compatibility_date = "2026-09-27"
+compatibility_flags = ["python_workers"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "yybbq-db"
+database_id = "4c2d9d81-ac00-450c-be91-377b49b45c1c"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"

@@ -1,0 +1,18 @@
+# ---- 本地缓存，含 Cloudflare 账号信息，不要提交 ----
+.wrangler/
+
+# ---- 数据库文件：绝对不要提交！----
+# y.db 是真实财务数据，一旦推到 GitHub 就收不回来了
+*.db
+*.sqlite
+*.sqlite3
+
+# ---- 依赖缓存 ----
+node_modules/
+.venv/
+.venv-workers/
+
+# ---- 系统垃圾文件 ----
+Thumbs.db
+desktop.ini
+.DS_Store

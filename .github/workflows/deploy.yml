@@ -1,0 +1,30 @@
+name: Deploy to Cloudflare Workers
+
+# 什么时候自动部署：
+#   1) 往 main 分支推送任何改动（包括你在 GitHub 网页上直接改文件）
+#   2) 也可以在 Actions 页面手动点 "Run workflow" 部署一次
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy worker (yybbq)
+
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 部署到 Cloudflare
+        run: npx --yes wrangler@4.142.0 deploy
+        env:
+          # 这个密钥需要在 GitHub 仓库里设置一次（见 README 说明）
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: 059d92b9ecb61b3239a9fcbdf51e5937

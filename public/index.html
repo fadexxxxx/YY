@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>YYBBQ</title>
+    <link rel="icon" href="static/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="static/icon.png">
+    <meta name="apple-mobile-web-app-title" content="YYBBQ">
+
+    <!-- iOS 加到主屏幕后类 App 全屏 -->
+    <meta name="viewport"content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+
+
+    <!-- 引入 CSS -->
+
+
+    <link rel="stylesheet" href="static/css.css">
+
+</head>
+
+
+
+<body>
+
+
+    <!-- #region HTML -->
+
+    <!-- #region 验证遮罩 -->
+    <div id="verifyOverlay">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+            <div class="verify-img-wrap">
+                <img id="verifyGraffiti" src="static/logo.png" alt="" draggable="false" />
+                <div class="verify-hotspots">
+                    <button type="button" class="verify-hotspot" id="verifyHotspot1" aria-label="hotspot 1"></button>
+                    <button type="button" class="verify-hotspot" id="verifyHotspot2" aria-label="hotspot 2"></button>
+                    <button type="button" class="verify-hotspot" id="verifyHotspot3" aria-label="hotspot 3"></button>
+                    <span class="target4"> </span>
+                    <button type="button" class="verify-hotspot" id="verifyHotspot4" aria-label="hotspot 4"></button>
+                    <span class="target5"> </span>
+                    <button type="button" class="verify-hotspot" id="verifyHotspot5" aria-label="hotspot 5"></button>
+
+                </div>
+            </div>
+            <form class="verify-input-wrap" id="verifyForm"><input type="text" id="verifyInput" aria-label="验证码" placeholder="请输入 code" autocomplete="off" autocapitalize="off" autocorrect="off"spellcheck="false" />
+                <button type="submit" id="verifySubmitBtn" aria-label="Submit verify code">OK</button>
+            </form>
+            <div id="verifyError" style="display:none;">code 错误，请重试</div>
+        </div>
+    </div>
+    <!-- #endregion -->
+
+    <!-- #region 正式页面 -->
+    <div class="main-panel verify-entry-hidden">
+
+        <!-- #region 主面板 -->
+
+        <!-- 主页 -->
+        <section class="panel overview-panel" aria-label="Overview panel">
+            <!-- 标题和操作按钮 -->
+            <div class="panel-header inline-month-header">
+                <button class="red-dot" type="button" id="overviewCloseBtn" aria-label="Back to verify">
+                </button>
+                <h1 class="panel-title" id="overviewMonth">Jul</h1>
+                <div class="panel-month-controls" data-panel-month-controls>
+                    <button type="button" class="panel-month-nav panel-month-prev" aria-label="上一月">◀</button>
+                    <button type="button" class="pz-date-toggle">2026 MAY</button>
+                    <button type="button" class="panel-month-nav panel-month-next" aria-label="下一月">▶</button>
+                    <div class="pz-date-selects">
+                        <div class="print-field pz-picker">
+                            <button type="button" class="pz-picker-btn panel-month-year-btn" aria-label="查看年份"
+                                aria-expanded="false"></button>
+                            <div class="pz-picker-menu panel-month-year-menu"></div>
+                        </div>
+                        <div class="print-field pz-picker">
+                            <button type="button" class="pz-picker-btn panel-month-month-btn" aria-label="查看月份"
+                                aria-expanded="false"></button>
+                            <div class="pz-picker-menu panel-month-month-menu"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 分割线 -->
+            <div class="title-rule"></div>
+            <!-- 上：总览数据树 -->
+            <div class="overview" id="overview">
+                <div class="overview-profit-row">
+                            <div class="profit-text"><span class="profit-label">总计</span><span class="profit-value"
+                                    id="profitValue"></span></div>
+                            <div class="overview-actions">
+                                <div class="icon-with-label">
+                                    <button class="header-icon-btn" type="button" id="openTotalReportBtn"
+                                        aria-label="Panel total report">🎯</button>
+                                    <span class="icon-label">报表</span>
+                                </div>
+                                <div class="icon-with-label">
+                                    <button class="header-icon-btn" type="button" id="openInventoryBtn"
+                                        aria-label="Open inventory">📦</button>
+                                    <span class="icon-label">库存</span>
+                                </div>
+                                <div class="icon-with-label">
+                                    <button class="header-icon-btn" type="button" id="openQuickBtn"
+                                        aria-label="Quick entry">✏️</button>
+                                    <span class="icon-label">现金</span>
+                                </div>
+                                <div class="icon-with-label">
+                                    <button class="header-icon-btn" type="button" id="openPrintBtn"
+                                        aria-label="Print month">🖨️</button>
+                                    <span class="icon-label">打印</span>
+                                </div>
+                                <div class="icon-with-label">
+                                    <button class="header-icon-btn" type="button" id="importBtn"
+                                        aria-label="导入">📂</button>
+                                    <span class="icon-label">上传</span>
+                                </div>
+                                <div class="icon-with-label">
+                                    <button class="header-icon-btn" type="button" id="openLogBtn"
+                                        aria-label="Open logs">👀</button>
+                                    <span class="icon-label">记录</span>
+                                </div>
+                                <div class="icon-with-label">
+                                    <button class="header-icon-btn create-year-icon-btn" type="button"
+                                        id="openCreateYearBtn" aria-label="创建年份">📅</button>
+                                    <span class="icon-label">创建</span>
+                                </div>
+                            </div>
+                </div>
+                <div class="overview-drill">
+                    <div class="overview-drill-keys">
+                        <button type="button"
+                            class="overview-node overview-node-branch income overview-drill-l1"
+                            id="overviewToggleIncome" aria-expanded="false">
+                            <span class="overview-caret" aria-hidden="true"></span>
+                            <strong>收入</strong>
+                            <span class="overview-amt" id="overviewIncomeTotalValue"></span>
+                        </button>
+                        <button type="button"
+                            class="overview-node overview-node-branch expense overview-drill-l1"
+                            id="overviewToggleExpense" aria-expanded="false">
+                            <span class="overview-caret" aria-hidden="true"></span>
+                            <strong>支出</strong>
+                            <span class="overview-amt" id="overviewExpenseTotalValue"></span>
+                        </button>
+                    </div>
+                    <div class="overview-drill-panels">
+                        <div class="overview-drill-branch overview-drill-l2" id="overviewIncomeBranch"
+                            style="display:none;">
+                            <section class="overview-group overview-group-dinein">
+                                <div class="overview-group-title">
+                                    <strong>DINEIN</strong>
+                                    <span class="overview-amt" id="overviewDineinTotalValue"></span>
+                                </div>
+                                <div class="overview-group-body overview-group-row">
+                                    <button type="button" class="overview-node overview-node-leaf"
+                                        id="overviewOpenCashBtn"><strong>现金</strong><span class="overview-amt"
+                                            id="overviewDineCashValue"></span></button>
+                                    <button type="button" class="overview-node overview-node-leaf"
+                                        id="overviewOpenDineinBtn"><strong>刷卡</strong><span class="overview-amt"
+                                            id="overviewDineInValue"></span></button>
+                                </div>
+                            </section>
+                            <section class="overview-group overview-group-delivery">
+                                <div class="overview-group-title">
+                                    <strong>外卖平台</strong>
+                                    <span class="overview-amt" id="overviewDeliveryTotalValue"></span>
+                                </div>
+                                <div class="overview-group-body overview-group-grid">
+                                    <button type="button" class="overview-node overview-node-leaf"
+                                        id="overviewOpenDeliveryBtn1"><strong>Uber</strong><span
+                                            class="overview-amt" id="overviewUberValue"></span></button>
+                                    <button type="button" class="overview-node overview-node-leaf"
+                                        id="overviewOpenDeliveryBtn2"><strong>饭团</strong><span
+                                            class="overview-amt" id="overviewRiceballValue"></span></button>
+                                    <button type="button" class="overview-node overview-node-leaf"
+                                        id="overviewOpenDeliveryBtn3"><strong>熊猫</strong><span
+                                            class="overview-amt" id="overviewPandaValue"></span></button>
+                                    <button type="button" class="overview-node overview-node-leaf"
+                                        id="overviewOpenDeliveryBtn4"><strong>BM</strong><span
+                                            class="overview-amt" id="overviewBmValue"></span></button>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="overview-drill-branch overview-drill-l2" id="overviewExpenseBranch"
+                            style="display:none;">
+                            <section class="overview-group overview-group-expense">
+                                <div class="overview-group-title">
+                                    <strong>开销</strong>
+                                    <span class="overview-amt" id="overviewExpenseGroupTotalValue"></span>
+                                </div>
+                                <div class="overview-group-body overview-group-row overview-group-row-3">
+                                    <button type="button" class="overview-node overview-node-leaf wage"
+                                        id="overviewOpenExpenseBtn"><strong>工资</strong><span
+                                            class="overview-amt" id="expenseValue"></span></button>
+                                    <button type="button" class="overview-node overview-node-leaf cost"
+                                    id="overviewOpencostBtn"><strong>流水</strong><span class="overview-amt"
+                                        id="overviewcostValue"></span></button>
+
+                                </div>
+                            </section>
+                            <section class="overview-group overview-group-other">
+                                <div class="overview-group-title">
+                                    <strong>其他</strong>
+                                    <span class="overview-amt" id="overviewOtherGroupTotalValue"></span>
+                                </div>
+                                <div class="overview-group-body overview-group-row overview-group-row-4">
+                                    <button type="button" class="overview-node overview-node-leaf others"
+                                        id="overviewOpenothersBtn"><strong>其他</strong><span class="overview-amt"
+                                            id="overviewothersValue"></span></button>
+                                    <button type="button" class="overview-node overview-node-leaf checks" 
+                                        id="checksBtn"><strong>支票</strong><span class="overview-amt" 
+                                            id="overviewChecksValue"></span></button>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 中：统计表 -->
+            <div class="overview-chart chart-card" aria-hidden="true">
+                <button class="chart-value-toggle" id="chartValueToggleBtn" type="button"
+                    aria-pressed="false">show</button>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 92px; bottom: 80px;"></div><span
+                        class="bar-month">Jan</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 78px; bottom: 80px;"></div><span
+                        class="bar-month">Feb</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 70px; bottom: 80px;"></div><span
+                        class="bar-month">Mar</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 58px; bottom: 80px;"></div><span
+                        class="bar-month">Apr</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 60px; bottom: 80px;"></div><span
+                        class="bar-month">May</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 46px; bottom: 80px;"></div><span
+                        class="bar-month">Jun</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 14px; bottom: 80px;"></div><span
+                        class="bar-month">Jul</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 60px; bottom: 80px;"></div><span
+                        class="bar-month">Aug</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 60px; bottom: 80px;"></div><span
+                        class="bar-month">Sep</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 72px; bottom: 80px;"></div><span
+                        class="bar-month">Oct</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 80px; bottom: 80px;"></div><span
+                        class="bar-month">Nov</span>
+                </div>
+                <div class="bar-slot">
+                    <div class="bar positive" style="height: 88px; bottom: 80px;"></div><span
+                        class="bar-month">Dec</span>
+                </div>
+            </div>
+            <div class="create-year" id="createYear" aria-hidden="true">
+                <div class="create-year-box" role="dialog" aria-label="年份管理">
+                    <strong>创建新表</strong>
+                    <div class="create-year-row create-year-add-row">
+                        <button type="button" class="create-year-add-btn" id="yearAddBtn">添加</button>
+                        <button type="button" class="create-year-remove-btn" id="yearRemoveModeBtn">移除</button>
+                        <input class="year-new-input" id="yearNewInput" type="text" inputmode="numeric" maxlength="4"
+                            placeholder="请输入年份" hidden>
+                        <button type="button" class="create-year-confirm-btn" id="yearConfirmBtn" hidden>确定</button>
+                        <button type="button" class="create-year-pick-btn" id="yearPickRemoveBtn" hidden>请选择</button>
+                    </div>
+                    <div class="create-year-list-block">
+                        <div class="create-year-list-title">当前</div>
+                        <div class="create-year-row create-year-list-row year-options" id="yearOptions"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 现金 -->
+        <div class="modal-layer" id="cashLayer">
+            <section class="panel cash-panel">
+                <div class="panel-header inline-month-header">
+                    <button class="red-dot" type="button" data-close="cashLayer" aria-label="Back"></button>
+                    <h2 class="panel-title" id="cashMonthTitle">现金</h2>
+                    <div class="panel-month-controls" data-panel-month-controls>
+                        <button type="button" class="panel-month-nav panel-month-prev" aria-label="上一月">◀</button>
+                        <button type="button" class="pz-date-toggle">2026 MAY</button>
+                        <button type="button" class="panel-month-nav panel-month-next" aria-label="下一月">▶</button>
+                        <div class="pz-date-selects">
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-year-btn" aria-label="查看年份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-year-menu"></div>
+                            </div>
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-month-btn" aria-label="查看月份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-month-menu"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="title-rule"></div>
+                <div class="cash-columns">
+                    <ul id="cashColumnA"></ul>
+                    <ul id="cashColumnB"></ul>
+                </div>
+                <div class="card-footer">
+                    <div class="footer-row sub-totals" style="justify-content: space-between;">
+                        <span id="cashFirstHalf"></span>
+                        <span id="cashSecondHalf"></span>
+                    </div>
+
+                    <div class="footer-line-solid"></div>
+                    <div class="footer-row grand-total" id="cashGrandTotal">
+                        <span>Total :</span>
+                        <span class="cash-val" style="min-width:auto; padding:0; "></span>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- 刷卡 -->
+        <div class="modal-layer" id="dineinLayer">
+            <section class="panel dinein-panel">
+                <div class="panel-header inline-month-header">
+                    <button class="red-dot" type="button" data-close="dineinLayer" aria-label="Back"></button>
+                    <h2 class="panel-title"><span id="dineinMonthTitle">刷卡</span><span
+                            class="stack-total-wrap">Total:<span class="stack-total-value"
+                                id="stackDineTotalValue"></span></span></h2>
+                    <div class="panel-month-controls" data-panel-month-controls>
+                        <button type="button" class="panel-month-nav panel-month-prev" aria-label="上一月">◀</button>
+                        <button type="button" class="pz-date-toggle">2026 MAY</button>
+                        <button type="button" class="panel-month-nav panel-month-next" aria-label="下一月">▶</button>
+                        <div class="pz-date-selects">
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-year-btn" aria-label="查看年份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-year-menu"></div>
+                            </div>
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-month-btn" aria-label="查看月份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-month-menu"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="title-rule"></div>
+                <section class="detail-board">
+                    <ul class="detail-list" id="detailList"></ul>
+                </section>
+            </section>
+        </div>
+        <!-- 外卖 -->
+        <div class="modal-layer" id="detailLayer">
+            <section class="panel detail-panel">
+                <div class="panel-header inline-month-header">
+                    <button class="red-dot" type="button" data-close="detailLayer" aria-label="Back"></button>
+                    <h2 class="panel-title" id="detailMonthTitle">平台明细</h2>
+                    <div class="panel-month-controls" data-panel-month-controls>
+                        <button type="button" class="panel-month-nav panel-month-prev" aria-label="上一月">◀</button>
+                        <button type="button" class="pz-date-toggle">2026 MAY</button>
+                        <button type="button" class="panel-month-nav panel-month-next" aria-label="下一月">▶</button>
+                        <div class="pz-date-selects">
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-year-btn" aria-label="查看年份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-year-menu"></div>
+                            </div>
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-month-btn" aria-label="查看月份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-month-menu"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="title-rule"></div>
+                <div class="detail-panel-grid">
+                    <aside class="stack-list">
+                        <article class="stack-card stack-uber">
+                            <h3>UBER <span class="stack-total-wrap">Total:<span class="stack-total-value"
+                                        id="stackUberTotalValue"></span></span></h3>
+                            <div class="stack-mini rows-2" id="uberMini">
+                                <div class="mini-row"><span class="mini-cell"></span><span class="mini-cell"></span>
+                                </div>
+                                <div class="mini-row"><span class="mini-cell"></span><span class="mini-cell"></span>
+                                </div>
+                            </div>
+                        </article>
+                        <article class="stack-card stack-riceball">
+                            <h3>饭团 <span class="stack-total-wrap">Total:<span class="stack-total-value"
+                                        id="stackRiceballTotalValue"></span></span></h3>
+                            <div class="stack-mini rows-2" id="riceballMini">
+                                <div class="mini-row"><span class="mini-cell"></span><span class="mini-cell"></span>
+                                </div>
+                                <div class="mini-row"><span class="mini-cell"></span><span class="mini-cell"></span>
+                                </div>
+                            </div>
+                        </article>
+                        <article class="stack-card stack-panda">
+                            <h3>熊猫 <span class="stack-total-wrap">Total:<span class="stack-total-value"
+                                        id="stackPandaTotalValue"></span></span></h3>
+                            <div class="stack-mini rows-4" id="pandaMini">
+                                <div class="mini-row"><span class="mini-cell"></span><span class="mini-cell"></span>
+                                </div>
+                                <div class="mini-row"><span class="mini-cell"></span><span class="mini-cell"></span>
+                                </div>
+                                <div class="mini-row"><span class="mini-cell"></span><span class="mini-cell"></span>
+                                </div>
+                                <div class="mini-row"><span class="mini-cell"></span><span class="mini-cell"></span>
+                                </div>
+                            </div>
+                        </article>
+                        <article class="stack-card stack-bm">
+                            <h3>BeyondMenu <span class="stack-total-wrap">Total:<span class="stack-total-value"
+                                        id="stackBmTotalValue"></span></span></h3>
+                            <div class="stack-mini rows-2" id="bmMini">
+                                <div class="mini-row"><span class="mini-cell"></span><span class="mini-cell"></span>
+                                </div>
+                                <div class="mini-row"><span class="mini-cell"></span><span class="mini-cell"></span>
+                                </div>
+                            </div>
+                        </article>
+                    </aside>
+
+                </div>
+            </section>
+        </div>
+        <!-- 工资 -->
+        <div class="modal-layer" id="expenseLayer">
+            <section class="panel expense-panel">
+                <div class="panel-header inline-month-header">
+                    <button class="red-dot" type="button" data-close="expenseLayer" aria-label="Back"></button>
+                    <h2 class="panel-title"><span id="expenseMonthTitle">工资</span></h2>
+                    <div class="panel-month-controls" data-panel-month-controls>
+                        <button class="owe-mode-btn" type="button" id="oweModeBtn">备注</button>
+                        <button type="button" class="panel-month-nav panel-month-prev" aria-label="上一月">◀</button>
+                        <button type="button" class="pz-date-toggle">2026 MAY</button>
+                        <button type="button" class="panel-month-nav panel-month-next" aria-label="下一月">▶</button>
+                        <div class="pz-date-selects">
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-year-btn" aria-label="查看年份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-year-menu"></div>
+                            </div>
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-month-btn" aria-label="查看月份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-month-menu"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="title-rule"></div>
+                <div class="expense-wrap">
+                    <article class="expense-card">
+                        <table class="salary-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th><span class="salary-hd-shift-left">First</span></th>
+                                    <th>Second</th>
+                                    <th><span class="salary-hd-shift-left">Total</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="salaryTableBody"></tbody>
+                        </table>
+                        <div class="card-footer salary-footer">
+                            <table class="salary-group-summary-table">
+                                <tbody id="salaryGroupSummary"></tbody>
+                            </table>
+                            <div class="footer-line-solid"></div>
+                            <div class="footer-row grand-total">
+                                <span>Total</span>
+                                <span id="salaryFirstTotalValue"></span>
+                                <span id="salarySecondTotalValue"></span>
+                                <span id="salaryTotalValue"></span>
+                            </div>
+                        </div>
+                    </article>
+                    <!-- 备注页（同款模板：样式与工资表一致，第四列为 Note，仅列已有员工名） -->
+                    <div class="owe-view" id="oweView" hidden>
+                        <table class="salary-table owe-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>First</th>
+                                    <th>Second</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="oweTableBody"></tbody>
+                        </table>
+                        <div class="owe-footer">
+                            <div class="owe-note-label">备注</div>
+                            <div class="owe-note-area" id="oweNoteArea">
+                                <textarea class="owe-note-input" id="oweNoteInput"></textarea>
+                            </div>
+                            <div class="footer-line-solid owe-line"></div>
+                            <div class="footer-row grand-total owe-total">
+                                <span>Owe</span>
+                                <span id="oweFirstTotalValue"></span>
+                                <span id="oweSecondTotalValue"></span>
+                                <span id="oweTotalValue"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Clean 操作确认框：移除 / 已结 -->
+                <div class="confirm-layer" id="oweCleanConfirmLayer" aria-hidden="true">
+                    <div class="confirm-box" role="dialog" aria-modal="true" aria-label="Clean confirm">
+                        <div class="confirm-text" id="oweCleanConfirmText">选择操作</div>
+                        <div class="confirm-actions">
+                            <button type="button" id="oweCleanRemoveBtn">移除</button>
+                            <button type="button" id="oweCleanSettleBtn">已结</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- 收支 -->
+        <div class="modal-layer" id="costLayer">
+            <section class="panel cost-panel">
+                <div class="panel-header inline-month-header">
+                    <button class="red-dot" type="button" data-close="costLayer" aria-label="Back"></button>
+                    <h2 class="panel-title"><span id="costMonthTitle">流水</span></h2>
+                    <div class="panel-month-controls" data-panel-month-controls>
+                        <button type="button" class="panel-month-nav panel-month-prev" aria-label="上一月">◀</button>
+                        <button type="button" class="pz-date-toggle">2026 MAY</button>
+                        <button type="button" class="panel-month-nav panel-month-next" aria-label="下一月">▶</button>
+                        <div class="pz-date-selects">
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-year-btn" aria-label="查看年份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-year-menu"></div>
+                            </div>
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-month-btn" aria-label="查看月份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-month-menu"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="title-rule"></div>
+                <div class="expense-wrap">
+                    <article class="expense-card">
+                        <div class="checks-body cost-collapsible">
+                            <div class="checks-panel-block">
+                                <div class="checks-block-header" id="costWdHeader" aria-expanded="false">
+                                    <span class="checks-block-caret" aria-hidden="true"></span>
+                                    <span class="checks-block-header-label">消费</span>
+                                    <span class="checks-block-header-count" id="costWdCount"></span>
+                                    <span class="checks-block-header-total" id="costWdTotal"></span>
+                                </div>
+                                <div class="checks-block-content" id="costWdBlock" hidden data-collapsed="1">
+                                    <ul class="expense-list" id="costListOut">
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="0" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="0" data-col="1"></span></li>
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="1" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="1" data-col="1"></span></li>
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="2" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="2" data-col="1"></span></li>
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="3" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="3" data-col="1"></span></li>
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="4" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="4" data-col="1"></span></li>
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="5" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="5" data-col="1"></span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="checks-panel-block">
+                                <div class="checks-block-header" id="costDepHeader" aria-expanded="false">
+                                    <span class="checks-block-caret" aria-hidden="true"></span>
+                                    <span class="checks-block-header-label">收入</span>
+                                    <span class="checks-block-header-count" id="costDepCount"></span>
+                                    <span class="checks-block-header-total" id="costDepTotal"></span>
+                                </div>
+                                <div class="checks-block-content" id="costDepBlock" hidden data-collapsed="1">
+                                    <ul class="expense-list" id="costListIn">
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="0" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="0" data-col="1"></span></li>
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="1" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="1" data-col="1"></span></li>
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="2" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="2" data-col="1"></span></li>
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="3" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="3" data-col="1"></span></li>
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="4" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="4" data-col="1"></span></li>
+                                        <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="costName" data-row="5" data-col="0"></span><span class="editable-cell others-val" data-type="costVal" data-row="5" data-col="1"></span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="checks-panel-block">
+                                <div class="checks-block-header" id="costOthersHeader" aria-expanded="false">
+                                    <span class="checks-block-caret" aria-hidden="true"></span>
+                                    <span class="checks-block-header-label">Others</span>
+                                    <span class="checks-block-header-count" id="costOthersCount"></span>
+                                    <span class="checks-block-header-total" id="costOthersTotal"></span>
+                                </div>
+                                <div class="checks-block-content" id="costOthersBlock" hidden data-collapsed="1">
+                                    <ul class="expense-list" id="costListOthers"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer other-footer">
+                            <div class="footer-line-solid"></div>
+                            <div class="footer-row grand-total cost-grand-total">
+                                <div class="cost-total-col">
+                                    <span class="cost-total-label">收入</span>
+                                    <span id="costInValue"></span>
+                                </div>
+                                <div class="cost-total-col">
+                                    <span class="cost-total-label">消费</span>
+                                    <span id="costOutValue"></span>
+                                </div>
+                                <div class="cost-total-col">
+                                    <span class="cost-total-label">净额</span>
+                                <span id="costTotalValue"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </div>
+        <!-- 其他 -->
+        <div class="modal-layer" id="othersLayer">
+            <section class="panel others-panel">
+                <div class="panel-header inline-month-header">
+                    <button class="red-dot" type="button" data-close="othersLayer" aria-label="Back"></button>
+                    <h2 class="panel-title"><span id="othersMonthTitle">其他</span></h2>
+                    <div class="panel-month-controls" data-panel-month-controls>
+                        <button type="button" class="panel-month-nav panel-month-prev" aria-label="上一月">◀</button>
+                        <button type="button" class="pz-date-toggle">2026 MAY</button>
+                        <button type="button" class="panel-month-nav panel-month-next" aria-label="下一月">▶</button>
+                        <div class="pz-date-selects">
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-year-btn" aria-label="查看年份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-year-menu"></div>
+                            </div>
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-month-btn" aria-label="查看月份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-month-menu"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="title-rule"></div>
+                <div class="expense-wrap">
+                    <article class="expense-card">
+
+                        <ul class="expense-list" id="othersList">
+                                <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="0" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="0" data-col="1"></span></li>
+                                <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="1" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="1" data-col="1"></span></li>
+                                <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="2" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="2" data-col="1"></span></li>
+                                <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="3" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="3" data-col="1"></span></li>
+                                <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="4" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="4" data-col="1"></span></li>
+                                <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="5" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="5" data-col="1"></span></li>
+                            <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="6" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="6" data-col="1"></span></li>
+                            <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="7" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="7" data-col="1"></span></li>
+                            <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="8" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="8" data-col="1"></span></li>
+                            <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="9" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="9" data-col="1"></span></li>
+                            <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="10" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="10" data-col="1"></span></li>
+                            <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="11" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="11" data-col="1"></span></li>
+                            <li><span class="others-idx"></span><span class="editable-cell others-name" data-type="othersName" data-row="12" data-col="0"></span><span class="editable-cell others-val" data-type="othersVal" data-row="12" data-col="1"></span></li>
+                            </ul>
+                        <div class="card-footer other-footer">
+                            <div class="footer-line-solid"></div>
+                            <div class="footer-row grand-total">
+                                <span>Total</span>
+                                <span id="othersTotalValue"></span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </div>
+        <!-- 支票 -->
+        <div class="modal-layer" id="checksLayer">
+            <section class="panel checks-panel">
+                <div class="panel-header inline-month-header">
+                    <button class="red-dot" type="button" data-close="checksLayer" aria-label="Back"></button>
+                    <h2 class="panel-title"><span id="checksMonthTitle">支票</span><span class="checks-header-total">Total:<span id="checksTextTotalValue"></span></span><span class="checks-header-count" id="checksHeaderCount"></span></h2>
+                    <div class="panel-month-controls" data-panel-month-controls>
+                        <button type="button" class="panel-month-nav panel-month-prev" aria-label="上一月">◀</button>
+                        <button type="button" class="pz-date-toggle">2026 MAY</button>
+                        <button type="button" class="panel-month-nav panel-month-next" aria-label="下一月">▶</button>
+                        <div class="pz-date-selects">
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-year-btn" aria-label="查看年份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-year-menu"></div>
+                            </div>
+                            <div class="print-field pz-picker">
+                                <button type="button" class="pz-picker-btn panel-month-month-btn" aria-label="查看月份"
+                                    aria-expanded="false"></button>
+                                <div class="pz-picker-menu panel-month-month-menu"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="title-rule"></div>
+                <div class="checks-body">
+                    <div class="checks-total-block"><span class="checks-text-header-total" id="checksTextHeaderTotal"></span></div>
+                    <div class="checks-panel-block checks-panel-block-text">
+                        <div class="checks-block-header" id="checksTextHeader" aria-expanded="true">
+                            <span class="checks-block-caret" aria-hidden="true"></span>
+                            <span class="checks-block-header-label">支票列表</span>
+                        </div>
+                        <div class="checks-block-content" id="checksTextBlock">
+                            <div class="checks-text-list" id="checksTextList"></div>
+                        </div>
+                    </div>
+                    <div class="checks-panel-block">
+                        <div class="checks-block-header" id="checksGridHeader" aria-expanded="false">
+                            <span class="checks-block-caret" aria-hidden="true"></span>
+                            <span class="checks-block-header-label">支票图片</span>
+                        </div>
+                        <div class="checks-block-content" id="checksGridBlock" hidden data-collapsed="1">
+                            <div class="checks-grid" id="checksGrid"></div>
+                        </div>
+                    </div>
+                    <div class="checks-empty" id="checksEmpty">当前月份暂无支票图片</div>
+                </div>
+            </section>
+            <div class="checks-preview-overlay hidden" id="checksPreviewOverlay">
+                <div class="checks-preview-box">
+                    <div class="checks-preview-title" id="checksPreviewTitle"></div>
+                    <button type="button" class="checks-preview-close" id="checksPreviewClose" aria-label="关闭预览">✕</button>
+                    <img class="checks-preview-img" id="checksPreviewImg" src="" alt="支票预览" />
+
+                </div>
+            </div>
+        </div>
+        <!-- Panel Z  -->
+        <div class="modal-layer" id="panelZLayer" aria-hidden="true">
+            <section class="panel panel-z">
+                <div class="pz-toolbar">
+                    <div class="panel-header">
+                        <button class="red-dot" type="button" data-close="panelZLayer" aria-label="Back"></button>
+                        <h2 class="panel-title pz-title"><span id="panelZTitle">当前月份</span><span class="pz-title-year"
+                                id="pzTitleYear">2026</span></h2>
+                        <div class="pz-bottom-controls" id="pzBottomControls">
+                            <button type="button" class="panel-month-nav panel-month-prev" id="pzMonthPrevBtn"
+                                aria-label="上一月">◀</button>
+                            <button type="button" class="pz-date-toggle" id="pzDateToggleBtn">选择日期</button>
+                            <button type="button" class="panel-month-nav panel-month-next" id="pzMonthNextBtn"
+                                aria-label="下一月">▶</button>
+                            <div class="pz-date-selects" id="pzDateSelects">
+                                <div class="print-field pz-picker" id="pzYearPicker">
+                                    <button type="button" class="pz-picker-btn" id="pzYearSelectBtn" aria-label="查看年份"
+                                        aria-expanded="false"></button>
+                                    <div class="pz-picker-menu" id="pzYearSelectMenu"></div>
+                                    <select id="pzYearSelect" class="pz-native-select" aria-label="查看年份"></select>
+                                </div>
+                                <div class="print-field pz-picker" id="pzMonthPicker">
+                                    <button type="button" class="pz-picker-btn" id="pzMonthSelectBtn" aria-label="查看月份"
+                                        aria-expanded="false"></button>
+                                    <div class="pz-picker-menu" id="pzMonthSelectMenu"></div>
+                                    <select id="pzMonthSelect" class="pz-native-select" aria-label="查看月份">
+                                        <option value="0">ALL</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="title-rule"></div>
+                <div class="pz-content">
+                    <div class="pz-header-row">
+                        <span>#</span><span
+                            id="pzSecondHeader">日期</span><span>牛</span><span>羊</span><span>鸡</span><span>鸡翅</span><span>Total</span>
+                    </div>
+                    <div class="pz-table-wrap" id="pzTableBody"></div>
+                    <div class="pz-footer" id="pzFooter">
+                        <span>Total</span><span id="pzGrandTotal">—</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- #endregion  -->
+
+        <!-- #region 功能面板 -->
+
+        <!-- Quick Z  -->
+        <div class="modal-layer" id="quickZLayer" aria-hidden="true">
+            <section class="quick-z-panel" role="dialog" aria-modal="true" aria-label="Quick Z Entry">
+                <div class="qz-header-row">
+                    <span class="qz-date-wrap" id="qzDateRow"><span class="qz-date-label" id="qzDateLabel"></span><span
+                            class="qz-date-input" id="qzDateInputWrap">
+                            <div class="quick-date-picker" id="qzMonthPicker">
+                                <button class="quick-date-picker-btn" id="qzMonthBtn" type="button"></button>
+                                <div class="quick-date-picker-menu" id="qzMonthMenu"></div>
+                            </div>
+                            <div class="quick-date-picker" id="qzDayPicker">
+                                <button class="quick-date-picker-btn" id="qzDayBtn" type="button"></button>
+                                <div class="quick-date-picker-menu" id="qzDayMenu"></div>
+                            </div>
+                            <input type="hidden" id="qzDateInput">
+                        </span></span>
+                    <div class="qz-header-btns">
+                        <button class="quick-icon" type="button" id="qzManualBtn" aria-label="Manual input">手动输入</button>
+                        <button class="quick-icon" type="button" id="qzWrenchBtn" aria-label="Edit date">选择日期</button>
+                    </div>
+                </div>
+                <div class="qz-edit-row" id="qzEditRow" style="display:none">
+                    <input class="qz-input" id="qzBeef" type="number" inputmode="decimal" placeholder="牛" />
+                    <input class="qz-input" id="qzLamb" type="number" inputmode="decimal" placeholder="羊" />
+                    <input class="qz-input" id="qzChicken" type="number" inputmode="decimal" placeholder="鸡" />
+                    <input class="qz-input" id="qzWing" type="number" inputmode="decimal" placeholder="鸡翅" />
+                </div>
+                <div class="qz-row-gap"></div>
+                <div class="qz-btns">
+                    <div class="qz-btn qz-btn-beef" role="button" tabindex="0" id="qzAddBeef">牛</div>
+                    <div class="qz-btn qz-btn-lamb" role="button" tabindex="0" id="qzAddLamb">羊</div>
+                    <div class="qz-btn qz-btn-chicken" role="button" tabindex="0" id="qzAddChicken">鸡</div>
+                    <div class="qz-btn qz-btn-wing" role="button" tabindex="0" id="qzAddWing">鸡翅</div>
+                </div>
+                <div class="qz-footer-btns">
+                    <button class="qz-footer-btn qz-btn-clear" type="button" id="qzClearBtn">清空</button>
+                    <button class="qz-footer-btn qz-btn-save" type="button" id="qzSaveBtn">确定 ✅</button>
+                </div>
+                <div class="quick-toast" id="qzToast">保存成功</div>
+            </section>
+        </div>
+        <!-- Quick-C -->
+        <div class="modal-layer" id="quickLayer" aria-hidden="true">
+            <section class="quick-panel" role="dialog" aria-modal="true" aria-label="Quick Entry">
+                <div class="quick-row" id="quickDateRow">
+                    <span class="quick-date" id="quickDateText"></span>
+                    <span class="quick-date-input" id="quickDateInputWrap" style="display:none">
+                        <div class="quick-date-picker" id="quickMonthPicker">
+                            <button class="quick-date-picker-btn" id="quickMonthBtn" type="button"></button>
+                            <div class="quick-date-picker-menu" id="quickMonthMenu"></div>
+                        </div>
+                        <div class="quick-date-picker" id="quickDayPicker">
+                            <button class="quick-date-picker-btn" id="quickDayBtn" type="button"></button>
+                            <div class="quick-date-picker-menu" id="quickDayMenu"></div>
+                        </div>
+                        <input type="hidden" id="quickDateInput">
+                    </span>
+                    <input class="quick-val-input" id="quickValInput" type="text" inputmode="numeric" aria-label="金额">
+                </div>
+                <div class="quick-row">
+                    <button class="quick-action-btn" type="button" id="quickWrenchBtn"
+                        aria-label="Edit date">更改日期</button>
+                    <button class="quick-action-btn" type="button" id="quickSaveBtn" aria-label="Save">保存</button>
+                </div>
+                <div class="quick-toast" id="quickToast">保存成功</div>
+            </section>
+        </div>
+        <!-- 导入 -->
+        <div class="modal-layer" id="importLayer">
+            <section class="panel import-preview-panel">
+                <div class="panel-header">
+                    <button class="red-dot" type="button" data-close="importLayer" aria-label="Back"></button>
+                    <h2 class="panel-title import-preview-title">数据导入 <span class="status" id="ipStatus"></span></h2>
+                    <div class="actions import-header-actions">
+                        <button id="ipPick" type="button">选择文件</button>
+                        <input type="file" id="ipFile" accept=".pdf,.csv,.txt" hidden>
+                    </div>
+                </div>
+                <div class="title-rule"></div>
+                <div class="import-preview-body" id="importBody">
+                    <div class="body">
+                        <div id="ipHistory" class="import-history" hidden></div>
+                        <div id="ipResult" class="code scroll" hidden></div>
+                        <div id="ipCompare" class="two" hidden>
+                            <div class="col">
+                                <div class="colhead">整理后</div>
+                                <div class="code scroll" id="ipLeft"></div>
+                            </div>
+                            <div class="col">
+                                <div class="colhead">
+                                    <span>原始内容</span>
+                                    <span class="actions">
+                                        <button id="ipToggle" class="mini" type="button">隐藏过滤</button>
+                                        <button id="ipClose" class="red-dot" type="button" aria-label="关闭">✕</button>
+                                    </span>
+                                </div>
+                                <div class="code scroll" id="ipRight"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="import-preview-actions" id="importActions">
+                    <button class="import-action-btn" type="button" id="importClearBtn">取消</button>
+                    <button class="import-action-btn" type="button" id="importSaveBtn">导入</button>
+                </div>
+            </section>
+            <div class="import-check-layer" id="ipCheckLayer" aria-hidden="true">
+                <div class="import-check-panel">
+
+                    <div class="import-check-head">
+                        <span class="import-check-title">支票图片</span>
+                        <button id="ipCheckClose" class="red-dot" type="button" aria-label="关闭"></button>
+                    </div>
+                    <div class="import-check-grid" id="ipCheckGrid"></div>
+                </div>
+            </div>
+            <div class="import-del-layer" id="ipDelLayer" aria-hidden="true">
+                <div class="import-del-panel">
+                    <div class="import-del-text">确定要删除这条导入记录吗？</div>
+                    <div class="import-del-actions">
+                        <button type="button" class="import-del-cancel" id="ipDelCancel">取消</button>
+                        <button type="button" class="import-del-ok" id="ipDelOk">删除</button>
+                    </div>
+                </div>
+            </div>
+            <div class="import-confirm-layer" id="ipConfirmLayer" aria-hidden="true">
+                <div class="import-confirm-title" id="ipConfirmTitle"></div>
+                <div class="import-confirm-list" id="ipConfirmList"></div>
+                <div class="import-confirm-actions">
+                    <button type="button" class="import-confirm-cancel" id="ipConfirmCancel">取消</button>
+                    <button type="button" class="import-confirm-ok" id="ipConfirmOk">确认导入</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 打印 -->
+        <div class="modal-layer" id="printLayer" aria-hidden="true">
+            <section class="print-panel" role="dialog" aria-modal="true" aria-label="Print month report">
+                <div class="panel-header">
+                    <button class="red-dot" type="button" data-close="printLayer" aria-label="Back"></button>
+                    <div class="print-mode-switch" role="tablist" aria-label="打印类型">
+                        <button class="print-mode-btn active" type="button" id="printModeMonthBtn"
+                            aria-selected="true">打印月报</button>
+                        <button class="print-mode-btn" type="button" id="printModeYearBtn"
+                            aria-selected="false">打印年报</button>
+                        <button class="print-mode-btn" type="button" id="printModeTotalBtn"
+                            aria-selected="false">打印表格</button>
+                    </div>
+                </div>
+                <div class="title-rule"></div>
+
+                <!-- 年月 + 分类按钮 一行显示（年月在左侧，分类按钮在右侧） -->
+                <div class="print-top-controls-row">
+                    <!-- 年月容器（左侧） -->
+                    <div class="print-controls" id="printControls">
+                        <div class="print-field" id="printYearField">
+                            <select id="printYearSelect"></select>
+                        </div>
+                        <div class="print-field" id="printMonthField">
+                            <select id="printMonthSelect"></select>
+                        </div>
+                        <div class="print-field" id="printYearMonthRange" style="display:none;">
+                            <div class="print-range-row">
+                                <select id="printYearStartMonth" title="起始月份"></select>
+                                <span class="range-sep">~</span>
+                                <select id="printYearEndMonth" title="结束月份"></select>
+                                <button type="button" class="print-range-add-btn" id="printYearRangeAddBtn"
+                                    aria-label="添加年份范围">+</button>
+                            </div>
+                        </div>
+                        <div class="print-field" id="printTotalField" style="display:none;">
+                            <div class="print-year-btns" id="printYearButtons"></div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：打印内容 label + 按钮组 -->
+                    <div class="print-content-group">
+                        <div class="print-content-label">打印内容</div>
+                        <div class="print-content-switch" id="printContentButtons" role="group" aria-label="打印内容"></div>
+                    </div>
+                </div>
+                <div class="print-year-range-summary" id="printYearRangeSummary"></div>
+                <div class="print-preview-wrapper" id="printPreviewWrapper"></div>
+
+                <div class="print-actions">
+                    <button class="print-action-btn" type="button" id="printCancelBtn">取消</button>
+                    <button class="print-action-btn primary" type="button" id="printConfirmBtn">打印</button>
+                </div>
+
+            </section>
+        </div>
+
+        <!-- #endregion -->
+
+        <!-- #region 数据类面板 -->
+
+        <!-- 报表 -->
+        <div class="modal-layer" id="totalReportLayer" aria-hidden="true">
+            <section class="total-report-panel" role="dialog" aria-modal="true" aria-label="Total report">
+                <div class="panel-header total-report-head">
+                    <button class="red-dot" type="button" data-close="totalReportLayer" aria-label="Back"></button>
+                    <h2 class="panel-title">总报表</h2>
+                </div>
+                <div class="title-rule"></div>
+                <div class="tr-inline-controls">
+                    <div class="tr-filter-row tr-year-row">
+                        <span class="tr-filter-label">年份:</span>
+                        <div id="trYearFilter" class="tr-inline-group tr-inline-year tr-year-filter" aria-label="年份筛选">
+                        </div>
+                    </div>
+                    <div class="tr-filter-row tr-two-col">
+                        <div class="tr-col tr-mode-col">
+                            <span class="tr-filter-label">类型:</span>
+                            <div class="tr-inline-group tr-inline-mode" id="trInlineModeRow"></div>
+                        </div>
+                        <div class="tr-col tr-cat-col">
+                         
+                            <div class="tr-inline-group tr-inline-cat" id="trInlineCatRow"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="totalReportContent" class="total-report-content"></div>
+            </section>
+            <!-- 显示设置弹窗 -->
+            <div class="tr-settings-overlay" id="trSettingsOverlay">
+                <div class="tr-settings-box" id="trSettingsBox">
+                    <div class="tr-settings-row" id="trModeRow"></div>
+                    <div class="tr-settings-row" id="trCatRow"></div>
+                </div>
+            </div>
+            <!-- 自定义表格确认弹窗 -->
+            <div class="confirm-layer" id="trCustomConfirmLayer" aria-hidden="true">
+                <div class="confirm-box" role="dialog" aria-modal="true" aria-label="Custom table confirm">
+                    <div class="confirm-text" id="trCustomConfirmText"></div>
+                    <div class="confirm-actions">
+                        <button type="button" id="trCustomConfirmBtn">确认</button>
+                        <button type="button" id="trCustomConfirmCancelBtn">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 库存面板 -->
+        <div class="modal-layer" id="inventoryLayer" aria-hidden="true">
+            <section class="inventory-panel" role="dialog" aria-modal="true" aria-label="Inventory">
+                <div class="panel-header total-report-head">
+                    <button class="red-dot" type="button" data-close="inventoryLayer" aria-label="Back"></button>
+                    <h2 class="panel-title">库存 <span class="inv-kind-count" id="invKindCount"></span>
+                </div>
+                <div class="title-rule"></div>
+                <div class="inv-actions">
+                    <button type="button" class="inv-action-btn inv-tone-in" id="invInBtn">入库</button>
+                    <button type="button" class="inv-action-btn inv-tone-out" id="invOutBtn">出库</button>
+                    <button type="button" class="inv-action-btn inv-tone-new" id="invNewBtn">新增</button>
+                    <div class="inv-new-form" id="invNewForm" hidden>
+                        <div class="inv-new-card">
+                        <input type="text" id="invNewInput" class="inv-new-input" placeholder="请输入新项目名称" autocomplete="off" />
+                        <div class="inv-color-dots" id="invColorDots">
+                            <button type="button" class="inv-dot inv-dot-blue" data-color="blue" aria-label="蓝色"></button>
+                            <button type="button" class="inv-dot inv-dot-green" data-color="green" aria-label="绿色"></button>
+                            <button type="button" class="inv-dot inv-dot-yellow" data-color="yellow" aria-label="黄色"></button>
+                            <button type="button" class="inv-dot inv-dot-pink" data-color="pink" aria-label="粉色"></button>
+                            <button type="button" class="inv-dot inv-dot-white" data-color="white" aria-label="白色"></button>
+                        </div>
+                        <button type="button" class="inv-new-cancel" id="invNewCancel">取消</button>
+                        <button type="button" class="inv-new-ok" id="invNewOk">确定</button>
+                        </div>
+                    </div>
+                    <button type="button" class="inv-action-btn inv-tone-new" id="invFullBtn">记录</button>
+                    <button type="button" class="inv-action-btn inv-tone-set" id="invSettingsBtn">⚙️ 设置</button>
+                </div>
+                <div class="inv-viewport" id="invViewport">
+                    <div class="inv-stock-records" id="invStockRecords">
+                    </div>
+
+                    <div class="inv-settings-overlay" id="invSettingsOverlay">
+                        <div class="inv-settings-box">
+                    <div class="inv-settings-head">
+                        <div class="inv-settings-title">单位设置<span class="inv-settings-sub">(每包数量)</span></div>
+                        <div class="inv-settings-actions">
+                            <button type="button" class="inv-settings-ok" id="invSettingsOk">确定</button>
+                            <button type="button" class="inv-settings-cancel" id="invSettingsCancel">取消</button>
+                        </div>
+                    </div>
+                    <div class="inv-settings-list" id="invSettingsList"></div>
+                    </div>
+                    </div>
+                </div>
+                <div class="inv-pager" id="invPager" hidden></div>
+                <div class="inv-full-layer" id="invFullLayer" aria-hidden="true">
+                    <div class="inv-full-box">
+                        <div class="inv-full-head">
+                            <span class="inv-full-title">记录</span>
+                            <button type="button" class="red-dot" id="invFullClose" aria-label="关闭"></button>
+                        </div>
+                        <div class="inv-full-scroll" id="invFullScroll">
+                            <div class="inv-full-table" id="invFullTable"></div>
+                        </div>
+                        <div class="inv-full-foot">
+                            <button type="button" class="inv-nav-btn" id="invFullPrev" aria-label="上一条记录">←</button>
+                            <button type="button" class="inv-nav-btn" id="invFullNext" aria-label="下一条记录">→</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- 日志 -->
+        <div class="modal-layer" id="logLayer">
+            <section class="panel log-panel">
+                <div class="panel-header">
+                    <button class="red-dot" type="button" data-close="logLayer" aria-label="Back"></button>
+                    <h2 class="panel-title">ActionRecords</h2>
+                </div>
+                <div class="title-rule"></div>
+                <div class="log-list" id="logList"></div>
+            </section>
+        </div>
+
+        <!-- #endregion  -->
+
+        <!-- #region 提示弹窗 -->
+
+        <!-- code输入弹层 -->
+        <div class="confirm-layer" id="codeInputLayer" aria-hidden="true">
+            <div class="confirm-box" role="dialog" aria-modal="true" aria-label="Code input">
+                <div class="code-input-wrap" id="codeInputWrap">
+                    <input type="text" id="codeInput" placeholder="请输入code" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+                    <button type="button" id="codeSubmitBtn" aria-label="Submit code">OK</button>
+                </div>
+                <div id="codeError" style="display:none;font-size:14px;color:#7f1d1d;margin-bottom:10px;">code 错误，请重试</div>
+            </div>
+        </div>
+        <!-- 保存成功弹窗 -->
+        <div class="modal-layer" id="qzSaveLayer" aria-hidden="true">
+            <section class="qz-save-panel" role="dialog" aria-modal="true" aria-label="Quick Z Save Success">
+                <div class="qz-save-title">保存成功</div>
+                <div class="qz-save-actions">
+                    <button class="qz-save-btn confirm" type="button" id="qzSaveConfirmBtn">确定</button>
+                    <button class="qz-save-btn view" type="button" id="qzSaveViewBtn">查看</button>
+                </div>
+            </section>
+        </div>
+        <!-- 删除确认弹窗 -->
+        <div class="confirm-layer" id="deleteConfirmLayer" aria-hidden="true">
+            <div class="confirm-box" role="dialog" aria-modal="true" aria-label="delete data">
+                <div class="confirm-text" id="deleteConfirmText">当前数据会全部删除，是否确定？</div>
+                <div class="confirm-actions">
+                    <button type="button" id="deleteConfirmBtn">确认</button>
+                    <button type="button" id="deleteCancelBtn">取消</button>
+                </div>
+            </div>
+        </div>
+        <!-- Quick Z 删除确认弹窗 -->
+        <div class="confirm-layer" id="qzRowdeleteConfirmLayer" aria-hidden="true">
+            <div class="confirm-box" role="dialog" aria-modal="true" aria-label="Quick Z row delete confirm">
+                <div class="confirm-text" id="qzRowdeleteConfirmText">是否整行删除？</div>
+                <div class="confirm-actions">
+                    <button type="button" id="qzRowdeleteConfirmBtn">确定</button>
+                    <button type="button" id="qzRowdeleteCancelBtn">取消</button>
+                </div>
+            </div>
+        </div>
+        <!-- ActionRecords 删除确认弹窗 -->
+        <div class="confirm-layer" id="logdeleteConfirmLayer" aria-hidden="true">
+            <div class="confirm-box" role="dialog" aria-modal="true"
+                aria-label="ActionRecords delete last 10 confirm">
+                <div class="confirm-text" id="logdeleteConfirmText">是否永久删除最后10条记录？</div>
+                <div class="confirm-actions">
+                    <button type="button" id="logdeleteConfirmBtn">确定</button>
+                    <button type="button" id="logdeleteCancelBtn">取消</button>
+                </div>
+            </div>
+        </div>
+        <!-- 明细上传输入 -->
+        <input id="importUploadInput" type="file" accept=".txt,.csv,.log,.json,.md,.pdf,.xlsx" style="display:none;" />
+
+        <!-- #endregion  -->
+
+    </div>
+
+    <!-- #endregion  -->
+
+    <!-- #endregion  -->
+
+    
+    <script src="static/js.js"> </script>
+
+
+
+</body>
+
+</html>

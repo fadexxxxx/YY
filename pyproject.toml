@@ -1,0 +1,13 @@
+[project]
+name = "yy-ledger"
+version = "0.1.0"
+description = "YY ledger Worker"
+requires-python = ">=3.13"
+# No third-party runtime deps. The "workers" module is provided by the runtime's
+# external SDK, so it must NOT be listed here: pywrangler would then try to
+# install it into the pyodide venv, which has no inspectable interpreter.
+dependencies = []
+
+# Build-time tooling (pywrangler) + external SDK pin, per Cloudflare docs.
+[dependency-groups]
+dev = ["workers-py", "workers-runtime-sdk"]
