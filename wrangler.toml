@@ -11,3 +11,9 @@ database_id = "4c2d9d81-ac00-450c-be91-377b49b45c1c"
 [assets]
 directory = "./public"
 binding = "ASSETS"
+
+# Workers 日志：自动收集请求日志，可在后台筛选/分析
+# 免费版额度 20 万条/天，保留 3 天
+[observability]
+enabled = true
+head_sampling_rate = 1
