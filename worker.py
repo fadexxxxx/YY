@@ -35,6 +35,7 @@ def ledger_default_month(month_index: int = 0, year: int | None = None) -> dict:
         "salesBreakdown": {"Check": 0, "cash": 0, "cost": 0, "uber": 0, "riceball": 0, "panda": 0, "bm": 0},
         "totalOverrides": {"Check": None, "uber": None, "riceball": None, "panda": None, "bm": None},
         "salaryRows": [["", "", ""] for _ in range(15)],
+        "salaryCheckRows": [["", "", ""] for _ in range(15)],
         "salaryOwe": [["", "", ""] for _ in range(15)],
         "salaryOweNote": "",
         "salaryTotal": 0,
@@ -154,6 +155,7 @@ def ledger_normalize_payload(raw, year: int | None = None) -> list:
                         val = None
                     month["totalOverrides"][key] = val
         month["salaryRows"] = ledger_normalize_pair_rows(item.get("salaryRows"), 15, 3)
+        month["salaryCheckRows"] = ledger_normalize_pair_rows(item.get("salaryCheckRows"), 15, 3)
         month["salaryOwe"] = ledger_normalize_pair_rows(item.get("salaryOwe"), 15, 3)
         month["salaryOweNote"] = "" if item.get("salaryOweNote") is None else str(item.get("salaryOweNote"))
         others_raw = item.get("othersExpenses")

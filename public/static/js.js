@@ -57,6 +57,7 @@ const defaultMonthData = (() => {
             salesBreakdown: { Check: 0, cash: 0, cost: 0, uber: 0, riceball: 0, panda: 0, bm: 0 },
             totalOverrides: { Check: null, uber: null, riceball: null, panda: null, bm: null },
             salaryRows: Array.from({ length: 17 }, () => ["", "", ""]),
+            salaryCheckRows: Array.from({ length: 17 }, () => ["", "", ""]),
             salaryTotal: 0,
             costExpenses: Array.from({ length: 8 }, () => ["", ""]),
             costTotal: 0,
@@ -814,6 +815,7 @@ function openOverlay(id) {
         if (id === 'expenseLayer') {
             hideOweView();
             resetOweNoteArea();
+            resetSalaryPayModeBtn();
             requestAnimationFrame(alignSalaryCellsWithHeaders);
         }
         if (id === 'checksLayer') {
@@ -869,6 +871,7 @@ window.addEventListener('resize', () => {
         scheduleAdaptivePanelRender(activeAdaptiveLayer.id);
     }
     alignSalaryCellsWithHeaders();
+    scheduleSalaryDualPosition();
 }, { passive: true });
 
 
@@ -1639,6 +1642,7 @@ function renderMonthState() {
     data.salesBreakdown = data.salesBreakdown || { Check: 0, cash: 0, cost: 0, uber: 0, riceball: 0, panda: 0, bm: 0 };
     panelRefreshHomeOverview(data, label, dayCount);
     panelRefreshSalary(data);
+    panelRefreshSalaryCheck(data);
     panelRefreshCost(data);
     panelRefreshOthers(data);
     panelRefreshCash(data, dayCount);
@@ -2921,6 +2925,219 @@ const tryResolveCellExpression = (cell) => {
     //#endregion
 
     //#region 汇总工资/收支并回写 monthData。
+
+function ensureSalaryCheckRows(data) {
+    const layout = ensureSalaryLayout(data);
+    if (!Array.isArray(data.salaryCheckRows)) data.salaryCheckRows = [];
+    while (data.salaryCheckRows.length < layout.totalRows) data.salaryCheckRows.push(['', '', '']);
+    data.salaryCheckRows = data.salaryCheckRows.slice(0, layout.totalRows).map((row) => {
+        const cleaned = sanitizeSalaryRow(row);
+        return ['', cleaned[1], cleaned[2]];
+    });
+    return layout;
+}
+
+function readSalaryCheckSupplementFromDom(rowIndex) {
+    const readCol = (col) => {
+        const el = document.querySelector(`#salaryTableBodyFull .editable-cell[data-type="salary-check"][data-row="${rowIndex}"][data-col="${col}"]`);
+        return normalizeEditableCellText(el ? el.textContent : '');
+    };
+    return ['', readCol(1), readCol(2)];
+}
+
+function salaryCombinedAmount(cashRow, checkRow, col) {
+    return parseVal(cashRow[col]) + parseVal(checkRow[col]);
+}
+
+// 现金页 / 支票页共用：本页数字固定在原位，另一页的数字灰色只读、贴在它右侧。
+// 原位上的元素（anchor）与普通格子完全一致；右侧元素绝对定位，不占位、不推动 anchor。
+function buildSalaryDualCellHtml(type, rowIndex, colIndex, cashVal, checkVal) {
+    const ownIsCash = type === 'salary';
+    const ownVal = ownIsCash ? cashVal : checkVal;
+    const otherVal = ownIsCash ? checkVal : cashVal;
+    const attrs = `data-type="${type}" data-row="${rowIndex}" data-col="${colIndex}"`;
+    if (isBlankLedgerValue(otherVal)) {
+        const ownDisplay = isBlankLedgerValue(ownVal) ? '&nbsp;' : formatNonCashTextDisplay(ownVal);
+        return { html: `<span class="editable-cell" ${attrs}>${ownDisplay}</span>`, tdClass: '' };
+    }
+    const otherText = formatNonCashTextDisplay(otherVal);
+    if (isBlankLedgerValue(ownVal)) {
+        return {
+            html: `<span class="static-cell salary-other-val salary-dual-anchor">${otherText}</span>`
+                + `<span class="editable-cell salary-dual-overlay" ${attrs}>&nbsp;</span>`,
+            tdClass: 'salary-dual-cell',
+        };
+    }
+    const ownText = formatNonCashTextDisplay(ownVal);
+    return {
+        html: `<span class="editable-cell salary-dual-anchor" ${attrs}>${ownText}</span>`
+            + `<span class="salary-other-val salary-dual-right">${otherText}</span>`,
+        tdClass: 'salary-dual-cell',
+    };
+}
+
+function buildCashPageAmountCellHtml(rowIndex, colIndex, cashVal, checkVal) {
+    return buildSalaryDualCellHtml('salary', rowIndex, colIndex, cashVal, checkVal);
+}
+
+function buildCheckPageAmountCellHtml(rowIndex, colIndex, cashVal, checkVal) {
+    return buildSalaryDualCellHtml('salary-check', rowIndex, colIndex, cashVal, checkVal);
+}
+
+function isSalaryMobileView() {
+    return window.matchMedia('(max-width: 480px)').matches;
+}
+
+function positionSalaryDualRight() {
+    document.querySelectorAll('#expenseLayer td.salary-dual-cell').forEach((td) => {
+        const anchor = td.querySelector('.salary-dual-anchor');
+        const right = td.querySelector('.salary-dual-right');
+        if (!anchor || !right || right.classList.contains('editing')) return;
+        if (!td.offsetWidth) return;
+        const range = document.createRange();
+        range.selectNodeContents(anchor);
+        const textRect = range.getBoundingClientRect();
+        const tdRect = td.getBoundingClientRect();
+        const scale = tdRect.width / td.offsetWidth || 1;
+        const anchorStyle = getComputedStyle(anchor);
+        right.style.fontSize = anchorStyle.fontSize;
+        right.style.lineHeight = anchorStyle.lineHeight;
+        right.style.left = isSalaryMobileView()
+            ? `${Math.round((textRect.right - tdRect.left) / scale + 4)}px`
+            : '240px';
+        const baseBottom = (tdRect.bottom - textRect.bottom) / scale;
+        right.style.bottom = `${baseBottom}px`;
+        const rightRange = document.createRange();
+        rightRange.selectNodeContents(right);
+        const rightRect = rightRange.getBoundingClientRect();
+        const delta = (textRect.bottom - rightRect.bottom) / scale;
+        right.style.bottom = `${Math.round(baseBottom - delta)}px`;
+    });
+}
+
+// 现金页表头 Cash 右侧的灰色 Total，以及每行对齐在它下面的「现金 + 支票」合计。
+function positionSalaryCombined() {
+    const head = document.getElementById('salaryCombinedHead');
+    if (!head || head.hidden) return;
+    const th = head.parentElement;
+    const label = th ? th.querySelector('.salary-hd-shift-left') : null;
+    if (!th || !label || !th.offsetWidth) return;
+    const thRect = th.getBoundingClientRect();
+    const scale = thRect.width / th.offsetWidth || 1;
+    head.style.left = '250px';
+    head.style.bottom = '9px';
+    const mobile = isSalaryMobileView();
+    document.querySelectorAll('#salaryTableBody .salary-row-combined').forEach((span) => {
+        const td = span.parentElement;
+        const anchor = td ? td.querySelector('.static-cell') : null;
+        if (!td || !anchor) return;
+        const anchorStyle = getComputedStyle(anchor);
+        span.style.fontSize = anchorStyle.fontSize;
+        span.style.lineHeight = anchorStyle.lineHeight;
+        const anchorRange = document.createRange();
+        anchorRange.selectNodeContents(anchor);
+        const anchorRect = anchorRange.getBoundingClientRect();
+        const tdRect = td.getBoundingClientRect();
+        if (mobile) {
+            span.style.left = `${Math.round((anchorRect.left - tdRect.left) / scale)}px`;
+            span.style.top = `${Math.round((anchorRect.bottom - tdRect.top) / scale)}px`;
+            span.style.bottom = 'auto';
+            return;
+        }
+        span.style.top = '';
+        span.style.left = '255px';
+        const baseBottom = (tdRect.bottom - anchorRect.bottom) / scale;
+        span.style.bottom = `${baseBottom}px`;
+        const spanRange = document.createRange();
+        spanRange.selectNodeContents(span);
+        const delta = (anchorRect.bottom - spanRange.getBoundingClientRect().bottom) / scale;
+        span.style.bottom = `${Math.round(baseBottom - delta)}px`;
+    });
+}
+
+function scheduleSalaryDualPosition() {
+    requestAnimationFrame(() => {
+        positionSalaryDualRight();
+        positionSalaryCombined();
+    });
+}
+
+function applySalaryAmountTdClasses(td, tdClass) {
+    if (!tdClass) return;
+    String(tdClass).trim().split(/\s+/).forEach((cls) => {
+        if (cls) td.classList.add(cls);
+    });
+}
+
+const updateSalaryCheckTotals = (shouldPersist = true) => {
+    const data = monthData[currentMonth];
+    let col1Sum = 0;
+    let col2Sum = 0;
+    const layoutInfo = ensureSalaryCheckRows(data);
+    const packedSalaryRows = [];
+    let hasAnySalaryAmount = false;
+    for (let i = 0; i < layoutInfo.totalRows; i++) {
+        const cashRow = sanitizeSalaryRow(data.salaryRows[i] || ['', '', '']);
+        const checkRow = sanitizeSalaryRow(readSalaryCheckSupplementFromDom(i));
+        packedSalaryRows.push(['', checkRow[1], checkRow[2]]);
+        const a = salaryCombinedAmount(cashRow, checkRow, 1);
+        const b = salaryCombinedAmount(cashRow, checkRow, 2);
+        col1Sum += a;
+        col2Sum += b;
+        if (a !== 0 || b !== 0) hasAnySalaryAmount = true;
+    }
+
+    document.querySelectorAll('#salaryTableBodyFull tr').forEach((tr, i) => {
+        const cashRow = sanitizeSalaryRow(data.salaryRows[i] || ['', '', '']);
+        const checkRow = packedSalaryRows[i] || ['', '', ''];
+        const rowTotal = salaryCombinedAmount(cashRow, checkRow, 1) + salaryCombinedAmount(cashRow, checkRow, 2);
+        const totalCell = tr.querySelector('td:last-child .static-cell');
+        if (totalCell) totalCell.textContent = rowTotal !== 0 ? formatCategoryDisplay(rowTotal) : '\u00a0';
+    });
+
+    const salaryTotal = document.getElementById('salaryTotalValueFull');
+    const salaryFirstTotal = document.getElementById('salaryFirstTotalValueFull');
+    const salarySecondTotal = document.getElementById('salarySecondTotalValueFull');
+    if (salaryTotal) salaryTotal.textContent = hasAnySalaryAmount ? formatCategoryDisplay(col1Sum + col2Sum) : '';
+    if (salaryFirstTotal) salaryFirstTotal.textContent = hasAnySalaryAmount ? formatCategoryDisplay(col1Sum) : '';
+    if (salarySecondTotal) salarySecondTotal.textContent = hasAnySalaryAmount ? formatCategoryDisplay(col2Sum) : '';
+
+    const salaryGroupSummary = document.getElementById('salaryGroupSummaryFull');
+    if (salaryGroupSummary) {
+        const firstRows = Math.max(1, Number(data.salarySectionFirstRows) || 5);
+        const secondRows = Math.max(1, Number(data.salarySectionSecondRows) || 3);
+        const groups = [
+            { label: '后厨', start: 0, end: firstRows - 1 },
+            { label: '起台', start: firstRows, end: firstRows + secondRows - 1 }
+        ];
+        const buildGroupRow = (group) => {
+            let firstHalf = 0;
+            let secondHalf = 0;
+            let hasAmount = false;
+            for (let i = group.start; i <= group.end; i++) {
+                const cashRow = sanitizeSalaryRow(data.salaryRows[i] || ['', '', '']);
+                const checkRow = packedSalaryRows[i] || ['', '', ''];
+                firstHalf += salaryCombinedAmount(cashRow, checkRow, 1);
+                secondHalf += salaryCombinedAmount(cashRow, checkRow, 2);
+                const c1 = salaryCombinedAmount(cashRow, checkRow, 1);
+                const c2 = salaryCombinedAmount(cashRow, checkRow, 2);
+                if (c1 !== 0 || c2 !== 0) hasAmount = true;
+            }
+            return hasAmount
+                ? `<tr class="footer-row sub-totals"><td class="f-col-1">${group.label} :</td><td class="f-col-2">${formatCategoryDisplay(firstHalf) || '&nbsp;'}</td><td class="f-col-3">${formatCategoryDisplay(secondHalf) || '&nbsp;'}</td><td class="f-col-4">${formatCategoryDisplay(firstHalf + secondHalf) || '&nbsp;'}</td></tr>`
+                : '';
+        };
+        const groupRows = [buildGroupRow(groups[1]), buildGroupRow(groups[0])].filter(Boolean);
+        salaryGroupSummary.innerHTML = groupRows.join('');
+        const summaryTable = salaryGroupSummary.closest('.salary-group-summary-table');
+        if (summaryTable) summaryTable.classList.toggle('has-rows', groupRows.length > 0);
+        requestAnimationFrame(alignSalaryCellsWithHeaders);
+    }
+
+    data.salaryCheckRows = packedSalaryRows;
+    if (shouldPersist) saveToStorage();
+};
+
 const updateExpenseTotals = (shouldPersist = true) => {
     const data = monthData[currentMonth];
     let col1Sum = 0;
@@ -2942,7 +3159,7 @@ const updateExpenseTotals = (shouldPersist = true) => {
     }
     for (let i = 0; i < layoutInfo.totalRows; i++) {
         const row = [];
-        document.querySelectorAll(`.editable-cell[data-type="salary"][data-row="${i}"]`).forEach(el => {
+        document.querySelectorAll(`#salaryTableBody .editable-cell[data-type="salary"][data-row="${i}"]`).forEach(el => {
             row.push(el.textContent);
         });
         const normalizedRow = sanitizeSalaryRow(row);
@@ -3023,6 +3240,7 @@ const updateExpenseTotals = (shouldPersist = true) => {
         salaryGroupSummary.innerHTML = groupRows.join('');
         const summaryTable = salaryGroupSummary.closest('.salary-group-summary-table');
         if (summaryTable) summaryTable.classList.toggle('has-rows', groupRows.length > 0);
+        requestAnimationFrame(alignSalaryCellsWithHeaders);
     }
 
     let costInSum = 0;
@@ -3179,6 +3397,12 @@ const setupExcelInteraction = (containerSelector) => {
         cell.classList.remove('editing');
         window.getSelection().removeAllRanges();
         if (isReadonlyMode()) return;
+        if (cell.dataset.type === 'salary-check') {
+            updateSalaryCheckTotals(true);
+            panelRefreshSalaryCheck(monthData[currentMonth] || {});
+            setupExcelInteraction('#expenseLayer');
+            return;
+        }
         updateExpenseTotals();
         if (cell.dataset.type === 'salary') {
             renderMonthState();
@@ -3270,7 +3494,11 @@ const setupExcelInteraction = (containerSelector) => {
         cell.addEventListener('input', function () {
             if (isReadonlyMode()) return;
             if (this.classList.contains('editing')) {
-                updateExpenseTotals(false);
+                if (this.dataset.type === 'salary-check') {
+                    updateSalaryCheckTotals(false);
+                } else {
+                    updateExpenseTotals(false);
+                }
                 if (containerSelector === '#costLayer') panelSyncCostRowIndexes();
                 if (containerSelector === '#othersLayer') panelSyncOthersRowIndexes();
             }
@@ -3321,27 +3549,48 @@ function scheduleSalaryRowHeightSync() {
 }
 
 function panelRefreshSalary(data) {
+    ensureSalaryCheckRows(data);
     const salaryLayout = ensureSalaryLayout(data);
     const salaryBody = document.getElementById('salaryTableBody');
+    if (!salaryBody) return;
     salaryBody.innerHTML = '';
+    const hasAnyCheck = (data.salaryCheckRows || []).some((r) => {
+        const c = sanitizeSalaryRow(r || ['', '', '']);
+        return !isBlankLedgerValue(c[1]) || !isBlankLedgerValue(c[2]);
+    });
+    const combinedHead = document.getElementById('salaryCombinedHead');
+    if (combinedHead) combinedHead.hidden = !hasAnyCheck;
     for (let i = 0; i < salaryLayout.totalRows; i++) {
         const rawRow = data.salaryRows[i] || ['', '', ''];
         const row = sanitizeSalaryRow(rawRow);
         data.salaryRows[i] = row;
+        const checkRow = sanitizeSalaryRow((data.salaryCheckRows || [])[i] || ['', '', '']);
         const tr = document.createElement('tr');
         if (i === salaryLayout.firstRows - 1 || i === salaryLayout.firstRows + salaryLayout.secondRows - 1) {
             tr.classList.add('salary-group-break');
         }
         row.forEach((cell, colIdx) => {
             const td = document.createElement('td');
-            const displayCell = isBlankLedgerValue(cell) ? '&nbsp;' : (colIdx === 0 ? cell : formatNonCashTextDisplay(cell));
-            td.innerHTML = `<span class="editable-cell" data-type="salary" data-row="${i}" data-col="${colIdx}">${displayCell}</span>`;
+            if (colIdx === 1 || colIdx === 2) {
+                const built = buildCashPageAmountCellHtml(i, colIdx, cell, checkRow[colIdx]);
+                applySalaryAmountTdClasses(td, built.tdClass);
+                td.innerHTML = built.html;
+            } else {
+                const displayCell = isBlankLedgerValue(cell) ? '&nbsp;' : cell;
+                td.innerHTML = `<span class="editable-cell" data-type="salary" data-row="${i}" data-col="${colIdx}">${displayCell}</span>`;
+            }
             tr.appendChild(td);
         });
         const rowTotalTd = document.createElement('td');
         const rowTotal = parseVal(row[1]) + parseVal(row[2]);
         const rowHasExplicitAmount = !isBlankLedgerValue(row[1]) || !isBlankLedgerValue(row[2]);
         rowTotalTd.innerHTML = `<span class="static-cell">${rowHasExplicitAmount ? (formatCategoryDisplay(rowTotal) || '&nbsp;') : '&nbsp;'}</span>`;
+        if (hasAnyCheck) {
+            const combined = salaryCombinedAmount(row, checkRow, 1) + salaryCombinedAmount(row, checkRow, 2);
+            if (combined !== 0) {
+                rowTotalTd.insertAdjacentHTML('beforeend', `<span class="salary-row-combined">${formatCategoryDisplay(combined)}</span>`);
+            }
+        }
         tr.appendChild(rowTotalTd);
         // 实发欠款：工资页=应发，备注页=实发，欠款 = 应发 − 实发（未记录实发 → 不欠款）
         const oweRow = Array.isArray(data.salaryOwe) ? (data.salaryOwe[i] || null) : null;
@@ -3366,6 +3615,46 @@ function panelRefreshSalary(data) {
 
     scheduleSalaryRowHeightSync();
     alignSalaryCellsWithHeaders();
+    scheduleSalaryDualPosition();
+}
+
+function panelRefreshSalaryCheck(data) {
+    const salaryLayout = ensureSalaryCheckRows(data);
+    const salaryBody = document.getElementById('salaryTableBodyFull');
+    if (!salaryBody) return;
+    salaryBody.innerHTML = '';
+    for (let i = 0; i < salaryLayout.totalRows; i++) {
+        const cashRow = sanitizeSalaryRow(data.salaryRows[i] || ['', '', '']);
+        const checkRow = sanitizeSalaryRow(data.salaryCheckRows[i] || ['', '', '']);
+        data.salaryCheckRows[i] = ['', checkRow[1], checkRow[2]];
+        const tr = document.createElement('tr');
+        if (i === salaryLayout.firstRows - 1 || i === salaryLayout.firstRows + salaryLayout.secondRows - 1) {
+            tr.classList.add('salary-group-break');
+        }
+        const nameTd = document.createElement('td');
+        const nameText = String(cashRow[0] || '').trim();
+        nameTd.innerHTML = `<span class="static-cell">${nameText ? escapeHtml(nameText) : '&nbsp;'}</span>`;
+        tr.appendChild(nameTd);
+
+        [1, 2].forEach((colIdx) => {
+            const td = document.createElement('td');
+            const built = buildCheckPageAmountCellHtml(i, colIdx, cashRow[colIdx], checkRow[colIdx]);
+            applySalaryAmountTdClasses(td, built.tdClass);
+            td.innerHTML = built.html;
+            tr.appendChild(td);
+        });
+
+        const rowTotalTd = document.createElement('td');
+        const rowTotal = salaryCombinedAmount(cashRow, checkRow, 1) + salaryCombinedAmount(cashRow, checkRow, 2);
+        const rowHasAmount = rowTotal !== 0;
+        rowTotalTd.innerHTML = `<span class="static-cell">${rowHasAmount ? (formatCategoryDisplay(rowTotal) || '&nbsp;') : '&nbsp;'}</span>`;
+        tr.appendChild(rowTotalTd);
+        salaryBody.appendChild(tr);
+    }
+    updateSalaryCheckTotals(false);
+    scheduleSalaryRowHeightSync();
+    alignSalaryCellsWithHeaders();
+    scheduleSalaryDualPosition();
 }
 
 
@@ -3374,7 +3663,66 @@ function panelRefreshSalary(data) {
     //#region 工资 · 备注页
 
 const oweModeBtn = document.getElementById('oweModeBtn');
+const salaryPayModeBtn = document.getElementById('salaryPayModeBtn');
 const oweView = document.getElementById('oweView');
+
+function applySalaryPayPanelView(isCashView) {
+    const wrap = document.querySelector('#expenseLayer .expense-wrap');
+    const cashCard = wrap ? wrap.querySelector('.salary-page-cash') : null;
+    const fullCard = wrap ? wrap.querySelector('.salary-page-full') : null;
+    if (wrap) {
+        wrap.classList.toggle('salary-pay-view-cash', isCashView);
+        wrap.classList.toggle('salary-pay-view-full', !isCashView);
+    }
+    if (cashCard) cashCard.hidden = !isCashView;
+    if (fullCard) fullCard.hidden = isCashView;
+    scheduleSalaryDualPosition();
+}
+
+function resetSalaryPayModeBtn() {
+    if (!salaryPayModeBtn) return;
+    salaryPayModeBtn.textContent = 'cash';
+    salaryPayModeBtn.classList.remove('is-check');
+    salaryPayModeBtn.classList.add('is-cash');
+    salaryPayModeBtn.setAttribute('aria-pressed', 'false');
+    applySalaryPayPanelView(true);
+}
+
+const expenseLayerEl = document.getElementById('expenseLayer');
+if (expenseLayerEl) {
+    expenseLayerEl.addEventListener('click', (e) => {
+        if (e.target.closest('.editable-cell')) return;
+        const td = e.target.closest('td.salary-dual-cell');
+        if (!td) return;
+        const cell = td.querySelector('.editable-cell');
+        if (cell && !cell.classList.contains('editing')) cell.click();
+    });
+}
+
+if (salaryPayModeBtn) {
+    salaryPayModeBtn.addEventListener('click', () => {
+        const isCash = salaryPayModeBtn.classList.contains('is-cash');
+        if (isCash) {
+            updateExpenseTotals(true);
+            salaryPayModeBtn.textContent = '支票';
+            salaryPayModeBtn.classList.remove('is-cash');
+            salaryPayModeBtn.classList.add('is-check');
+            salaryPayModeBtn.setAttribute('aria-pressed', 'true');
+            applySalaryPayPanelView(false);
+            panelRefreshSalaryCheck(monthData[currentMonth] || {});
+            setupExcelInteraction('#expenseLayer');
+        } else {
+            updateSalaryCheckTotals(true);
+            salaryPayModeBtn.textContent = 'cash';
+            salaryPayModeBtn.classList.remove('is-check');
+            salaryPayModeBtn.classList.add('is-cash');
+            salaryPayModeBtn.setAttribute('aria-pressed', 'false');
+            applySalaryPayPanelView(true);
+            panelRefreshSalary(monthData[currentMonth] || {});
+            setupExcelInteraction('#expenseLayer');
+        }
+    });
+}
 
 // 进入欠款页：隐藏工资表，显示同款模板，仅列已有员工名。
 function showOweView() {
@@ -3634,10 +3982,14 @@ function alignSalaryCellsWithHeaders() {
             const range = document.createRange();
             range.selectNodeContents(th);
             let padLeft = Math.round(Math.max(0, range.getBoundingClientRect().left - thLeft));
-            if (col === 1) padLeft = 25; // 第二列(First)固定 25px
-            if (col === 2) padLeft = 33; // 第三列(Second)固定 33px
-            if (col === 3) padLeft = 33; // 第四列固定 33px
+            if (col === 1) padLeft = 25;
+            if (col === 2) padLeft = 33;
+            if (col === 3) padLeft = 33;
             table.querySelectorAll(`tbody tr td:nth-child(${col + 1}) .editable-cell, tbody tr td:nth-child(${col + 1}) .static-cell`).forEach((cell) => {
+                const td = cell.closest('td');
+                if (cell.classList.contains('salary-dual-right')) {
+                    return;
+                }
                 cell.style.paddingLeft = padLeft ? `${padLeft}px` : '';
             });
             table.querySelectorAll(`tbody tr td:nth-child(${col + 1}) .owe-badge`).forEach((badge) => {

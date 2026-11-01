@@ -447,6 +447,7 @@
                     <button class="red-dot" type="button" data-close="expenseLayer" aria-label="Back"></button>
                     <h2 class="panel-title"><span id="expenseMonthTitle">工资</span></h2>
                     <div class="panel-month-controls" data-panel-month-controls>
+                        <button class="owe-mode-btn salary-pay-mode-btn is-cash" type="button" id="salaryPayModeBtn" aria-pressed="false">cash</button>
                         <button class="owe-mode-btn" type="button" id="oweModeBtn">备注</button>
                         <button type="button" class="panel-month-nav panel-month-prev" aria-label="上一月">◀</button>
                         <button type="button" class="pz-date-toggle">2026 MAY</button>
@@ -466,15 +467,15 @@
                     </div>
                 </div>
                 <div class="title-rule"></div>
-                <div class="expense-wrap">
-                    <article class="expense-card">
+                <div class="expense-wrap salary-pay-view-cash">
+                    <article class="expense-card salary-page-cash">
                         <table class="salary-table">
                             <thead>
                                 <tr>
                                     <th>Name</th>
                                     <th><span class="salary-hd-shift-left">First</span></th>
                                     <th>Second</th>
-                                    <th><span class="salary-hd-shift-left">Total</span></th>
+                                    <th class="salary-hd-total-cell"><span class="salary-hd-shift-left">Cash</span><span class="salary-hd-combined" id="salaryCombinedHead" hidden>Total</span></th>
                                 </tr>
                             </thead>
                             <tbody id="salaryTableBody"></tbody>
@@ -489,6 +490,31 @@
                                 <span id="salaryFirstTotalValue"></span>
                                 <span id="salarySecondTotalValue"></span>
                                 <span id="salaryTotalValue"></span>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="expense-card salary-page-full" hidden>
+                        <table class="salary-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th><span class="salary-hd-shift-left">First</span></th>
+                                    <th>Second</th>
+                                    <th><span class="salary-hd-shift-left">Total</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="salaryTableBodyFull"></tbody>
+                        </table>
+                        <div class="card-footer salary-footer">
+                            <table class="salary-group-summary-table">
+                                <tbody id="salaryGroupSummaryFull"></tbody>
+                            </table>
+                            <div class="footer-line-solid"></div>
+                            <div class="footer-row grand-total">
+                                <span>Total</span>
+                                <span id="salaryFirstTotalValueFull"></span>
+                                <span id="salarySecondTotalValueFull"></span>
+                                <span id="salaryTotalValueFull"></span>
                             </div>
                         </div>
                     </article>

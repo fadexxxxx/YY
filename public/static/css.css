@@ -1837,17 +1837,20 @@
       margin-bottom:0;
     }
   }
-  #salaryGroupSummary .footer-row {
+  #salaryGroupSummary .footer-row,
+  #salaryGroupSummaryFull .footer-row {
     display:grid;
     grid-template-columns:24% 25% 25% 26%;
     align-items:center;
     white-space:nowrap;
     font-weight:700;
   }
-  #salaryGroupSummary .footer-row>span {
+  #salaryGroupSummary .footer-row>span,
+  #salaryGroupSummaryFull .footer-row>span {
     display:block;
   }
-  #salaryGroupSummary .footer-row.owe-sub-total {
+  #salaryGroupSummary .footer-row.owe-sub-total,
+  #salaryGroupSummaryFull .footer-row.owe-sub-total {
     color:red;
   }
   .salary-table tbody tr {
@@ -1953,13 +1956,17 @@
   .salary-group-summary-table.has-rows {
     display:table;
   }
-  #salaryGroupSummary .f-col-1 {
+  #salaryGroupSummary .f-col-1,
+  #salaryGroupSummaryFull .f-col-1 {
     width:auto;
     text-align:left;
   }
   #salaryGroupSummary .f-col-2,
   #salaryGroupSummary .f-col-3,
-  #salaryGroupSummary .f-col-4 {
+  #salaryGroupSummary .f-col-4,
+  #salaryGroupSummaryFull .f-col-2,
+  #salaryGroupSummaryFull .f-col-3,
+  #salaryGroupSummaryFull .f-col-4 {
     width:auto;
     text-align:center;
   }
@@ -2074,7 +2081,7 @@
     font-variant-numeric:tabular-nums;
   }
   .salary-footer .footer-row.grand-total>span:last-child {
-    text-align:right;
+    text-align:center;
     font-variant-numeric:tabular-nums;
   }
   .others-panel .panel-title,
@@ -2200,6 +2207,71 @@
   }
   .owe-mode-btn:hover {
     background:rgb(0 0 0/8%);
+  }
+  .salary-pay-mode-btn.is-cash {
+    background:rgb(255 248 220/95%);
+  }
+  .salary-pay-mode-btn.is-check {
+    background:rgb(232 245 255/95%);
+  }
+  .salary-pay-mode-btn.is-cash:hover {
+    background:rgb(255 242 200/95%);
+  }
+  .salary-pay-mode-btn.is-check:hover {
+    background:rgb(220 238 252/95%);
+  }
+  #expenseLayer .expense-card[hidden] {
+    display:none !important;
+  }
+  #expenseLayer .expense-card.salary-page-full {
+    background:#86ffafde;
+  }
+  #expenseLayer .salary-other-val {
+    color:#b5b5b5;
+    font-weight:inherit;
+    pointer-events:none;
+    user-select:none;
+    -webkit-user-select:none;
+    white-space:nowrap;
+  }
+  #expenseLayer .salary-table tbody td.salary-dual-cell .salary-dual-right:not(.editing) {
+    position:absolute;
+    display:inline-block;
+    width:auto;
+    min-width:0;
+    max-width:none;
+    margin:0;
+    padding:0;
+    white-space:nowrap;
+    z-index:2;
+  }
+  #expenseLayer .salary-table tbody td.salary-dual-cell .salary-dual-overlay:not(.editing) {
+    position:absolute;
+    inset:0;
+    width:auto;
+    min-width:0;
+    max-width:none;
+    margin:0;
+    opacity:0;
+    z-index:1;
+  }
+  #expenseLayer .salary-table tbody td.salary-dual-cell:has(.editable-cell.editing) .salary-other-val {
+    display:none;
+  }
+  #expenseLayer .salary-table th.salary-hd-total-cell {
+    position:relative;
+  }
+  #expenseLayer .salary-hd-combined,
+  #expenseLayer .salary-row-combined {
+    position:absolute;
+    color:#b5b5b5;
+    white-space:nowrap;
+    pointer-events:none;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  #expenseLayer .salary-hd-combined[hidden] {
+    display:none;
   }
   .expense-wrap.owe-mode .expense-card {
     display:none;
@@ -9761,6 +9833,7 @@
     transform:none;
   }
   #expenseLayer #salaryGroupSummary td:nth-child(1),
+  #expenseLayer #salaryGroupSummaryFull td:nth-child(1),
   #expenseLayer .salary-table td:nth-child(1),
   #expenseLayer .salary-table th:nth-child(1) {
     width:20%;
@@ -9852,6 +9925,9 @@
     font-size:17px;
     font-weight:800;
   }
+  #expenseLayer .salary-hd-combined {
+    display:none;
+  }
   #expenseLayer .salary-footer {
     flex-shrink:0;
     padding-top:8px;
@@ -9868,17 +9944,20 @@
   #expenseLayer .salary-footer .footer-line-solid {
     margin:0 0 8px;
   }
-  #expenseLayer #salaryGroupSummary td {
+  #expenseLayer #salaryGroupSummary td,
+  #expenseLayer #salaryGroupSummaryFull td {
     padding:1px 0;
     font-size:15px;
     line-height:1.15;
   }
-  #expenseLayer #salaryGroupSummary .footer-row {
+  #expenseLayer #salaryGroupSummary .footer-row,
+  #expenseLayer #salaryGroupSummaryFull .footer-row {
     grid-template-columns:20% 26% 26% 28%;
     margin-left:2px;
     margin-right:2px;
   }
-  #expenseLayer #salaryGroupSummary .footer-row.sub-totals {
+  #expenseLayer #salaryGroupSummary .footer-row.sub-totals,
+  #expenseLayer #salaryGroupSummaryFull .footer-row.sub-totals {
     display:table-row;
   }
   #expenseLayer .salary-group-summary-table {
@@ -9887,11 +9966,14 @@
     margin-right:2px;
   }
   #expenseLayer #salaryGroupSummary td:nth-child(2),
-  #expenseLayer #salaryGroupSummary td:nth-child(3) {
+  #expenseLayer #salaryGroupSummary td:nth-child(3),
+  #expenseLayer #salaryGroupSummaryFull td:nth-child(2),
+  #expenseLayer #salaryGroupSummaryFull td:nth-child(3) {
     width:26%;
     text-align:center;
   }
-  #expenseLayer #salaryGroupSummary td:nth-child(4) {
+  #expenseLayer #salaryGroupSummary td:nth-child(4),
+  #expenseLayer #salaryGroupSummaryFull td:nth-child(4) {
     width:28%;
     text-align:center;
   }
@@ -9928,7 +10010,10 @@
   }
   #expenseLayer #salaryGroupSummary .f-col-2,
   #expenseLayer #salaryGroupSummary .f-col-3,
-  #expenseLayer #salaryGroupSummary .f-col-4 {
+  #expenseLayer #salaryGroupSummary .f-col-4,
+  #expenseLayer #salaryGroupSummaryFull .f-col-2,
+  #expenseLayer #salaryGroupSummaryFull .f-col-3,
+  #expenseLayer #salaryGroupSummaryFull .f-col-4 {
     text-align:center;
   }
   #expenseLayer .salary-footer .footer-row {
