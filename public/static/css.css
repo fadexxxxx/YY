@@ -2563,6 +2563,11 @@
     overflow-y:visible;
     z-index:6;
   }
+  .panel-month-controls .panel-month-year-menu.has-many {
+    max-height:min(46vh, 320px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
   .panel-month-controls .pz-picker-option {
     border:0;
     background:0 0;

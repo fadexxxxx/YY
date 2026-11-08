@@ -206,7 +206,7 @@ async function loadLedgerYear(year) {
     return false;
 }
 
-function switchLedgerYear(year, keepOpen) {
+async function switchLedgerYear(year, keepOpen) {
     const targetYear = Number(year);
     if (!Number.isInteger(targetYear) || targetYear === Number(currentYear)) return;
     if (!isKnownLedgerYear(targetYear)) return;
@@ -215,7 +215,10 @@ function switchLedgerYear(year, keepOpen) {
     yearPageStart = 0;
     yearEditMode = false;
     yearInputActive = false;
-    loadLedgerYear(targetYear);
+    // 目标年份只有点开才加载（不预取），保持原有省流量策略。
+    // loadLedgerYear 内部会调 renderMonthState → refreshPanelMonthControls，
+    // 所以成功后年份菜单会自动刷新高亮。
+    await loadLedgerYear(targetYear);
 }
 // #endregion
 
@@ -566,7 +569,12 @@ function refreshPanelMonthControls() {
         control.toggleBtn.textContent = String(currentYear) + ' ' + (monthLabels[currentMonth] || '---');
         control.yearBtn.textContent = String(currentYear);
         control.monthBtn.textContent = monthLabels[currentMonth] || '---';
-        const yearOptions = (Array.isArray(ledgerYears) ? ledgerYears.slice() : []).map(Number).sort((a, b) => b - a);
+        // 年份菜单：列出所有已存在的年份（当前年份也始终在内），点哪个才加载哪个
+        const yearOptions = Array.from(new Set(
+            (Array.isArray(ledgerYears) ? ledgerYears.slice() : []).concat(Number(currentYear) || [])
+        )).map(Number).filter((year) => Number.isInteger(year)).sort((a, b) => b - a);
+        // 年份多时菜单限高滚动，避免撑出面板
+        control.yearMenu.classList.toggle('has-many', yearOptions.length > 6);
         control.yearMenu.innerHTML = yearOptions.map((year) => (
             `<button type="button" class="pz-picker-option${Number(year) === Number(currentYear) ? ' active' : ''}" data-panel-year="${year}">${year}</button>`
         )).join('');
@@ -665,10 +673,16 @@ function initPanelMonthControls() {
             if (!btn) return;
             e.stopPropagation();
             const year = Number(btn.getAttribute('data-panel-year'));
-            if (Number.isInteger(year)) {
-                switchLedgerYear(year, true);
+            if (!Number.isInteger(year)) {
+                closePanelMonthMenus();
+                return;
             }
-            closePanelMonthMenus();
+            if (year === Number(currentYear)) {
+                closePanelMonthMenus();
+                return;
+            }
+            // 切到别的年份：保持菜单打开，等年份数据加载完再刷新选项
+            switchLedgerYear(year, true);
         });
 
         monthMenu.addEventListener('click', (e) => {
