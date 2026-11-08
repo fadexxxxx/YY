@@ -334,16 +334,10 @@ def custom_table_normalize_payload(raw) -> dict:
 
 # ============ 以下是 Workers 专用部分：路由 + D1 ============
 
-# 写入口令：POST 必须带 X-Ledger-Code，否则拒绝。明文、傻瓜式，只防随手乱 POST。
-WRITE_CODE = "FORBIDDEN"
-
-# 验证口令：前端输入与此一致才放行进主面板。
-COKE = "2"
-
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-Ledger-Code",
+    "Access-Control-Allow-Headers": "Content-Type",
 }
 
 def json_response(payload: dict, status: int = 200) -> Response:
@@ -388,18 +382,7 @@ class Default(WorkerEntrypoint):
         if method == "OPTIONS":
             return Response("", status=204, headers=CORS_HEADERS)
 
-        # 所有写操作都必须带对写入口令，否则一律拒绝
-        if method == "POST":
-            if (request.headers.get("x-ledger-code") or "").strip() != WRITE_CODE:
-                return json_response({"ok": False, "error": "bad code"}, 401)
-
         try:
-            if method == "GET" and path == "/coke":
-                return json_response({"ok": True, "coke": COKE})
-            if method == "GET" and path == "/verify":
-                from urllib.parse import parse_qs as _pqs
-                given = (_pqs(parsed.query).get("code", [""])[0] or "")
-                return json_response({"ok": (given.strip() == COKE)})
             if method == "GET" and path == "/ledger/years":
                 return await self.h_ledger_years(db)
             if method == "GET" and path == "/ledger/load":
