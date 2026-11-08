@@ -337,6 +337,9 @@ def custom_table_normalize_payload(raw) -> dict:
 # 写入口令：POST 必须带 X-Ledger-Code，否则拒绝。明文、傻瓜式，只防随手乱 POST。
 WRITE_CODE = "FORBIDDEN"
 
+# 验证口令：前端输入与此一致才放行进主面板。
+COKE = "2"
+
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -391,6 +394,12 @@ class Default(WorkerEntrypoint):
                 return json_response({"ok": False, "error": "bad code"}, 401)
 
         try:
+            if method == "GET" and path == "/coke":
+                return json_response({"ok": True, "coke": COKE})
+            if method == "GET" and path == "/verify":
+                from urllib.parse import parse_qs as _pqs
+                given = (_pqs(parsed.query).get("code", [""])[0] or "")
+                return json_response({"ok": (given.strip() == COKE)})
             if method == "GET" and path == "/ledger/years":
                 return await self.h_ledger_years(db)
             if method == "GET" and path == "/ledger/load":

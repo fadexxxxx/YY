@@ -1156,7 +1156,7 @@ function showVerifyFrontToast(message) {
     }
 
     // 处理验证口令并执行对应快捷指令。
-    function handleVerify() {
+    async function handleVerify() {
         const vRaw = inp.value.trim();
         const v = vRaw.toLowerCase();
 
@@ -1165,7 +1165,6 @@ function showVerifyFrontToast(message) {
         const actions = {
             // 均为正常开面板；验证层由 openOverlay 先藏，关面板后 goBack 再恢复
             'c': () => openOverlay('quickLayer'),
-            '2': () => { hasFullAccess = true; ov.classList.add('hidden'); exitVerifyEntryMode(); },
             'z': () => openOverlay('quickZLayer'),
             '0': () => openOverlayFromVerify(() => openEditablePanelZ()),
             'cash': () => openOverlayFromVerify(() => openReadonlyCash()),
@@ -1183,12 +1182,29 @@ function showVerifyFrontToast(message) {
             addAccessRecordByCode(vRaw);
             actions[v]();
             stabilizeAfterVerify();
-        } else {
-            err.style.display = 'block';
-            inp.value = '';
-            if (!document.activeElement || document.activeElement === document.body) inp.focus();
+            syncBtn();
+            return;
         }
 
+        // 主面板口令由 worker 的 COKE 决定：发请求比对，通过才进门
+        {
+            const res0 = await fetch(LEDGER_API_BASE + '/verify?code=' + encodeURIComponent(vRaw));
+            let ok0 = false;
+            try { ok0 = !!(await res0.json()).ok; } catch (_) {}
+            if (ok0) {
+                hasFullAccess = true;
+                ov.classList.add('hidden');
+                exitVerifyEntryMode();
+                addAccessRecordByCode('entry');
+                stabilizeAfterVerify();
+                syncBtn();
+                return;
+            }
+        }
+
+        err.style.display = 'block';
+        inp.value = '';
+        if (!document.activeElement || document.activeElement === document.body) inp.focus();
         syncBtn();
     }
 
@@ -1203,13 +1219,21 @@ function showVerifyFrontToast(message) {
         verifyHotspot1: 'z',
         verifyHotspot2: 'cash',
         verifyHotspot3: 'c',
-        verifyHotspot4: '2',
         verifyHotspot5: 'k',
     };
     Object.keys(hotspotCodeMap).forEach((id) => {
         const btn = document.getElementById(id);
         if (!btn) return;
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
+            if (id === 'verifyHotspot4') {
+                // 主面板入口：点击直接隐藏验证页
+                hasFullAccess = true;
+                ov.classList.add('hidden');
+                exitVerifyEntryMode();
+                addAccessRecordByCode('entry');
+                stabilizeAfterVerify();
+                return;
+            }
             inp.value = hotspotCodeMap[id];
             if (id === 'verifyHotspot5') {
                 form.dispatchEvent(new Event('submit', { cancelable: true }));

@@ -282,7 +282,7 @@
   .target4 {
     position:fixed;
     left:50vw;
-    top:80%;
+    top:90%;
     transform:translate(-50%,-50%);
     z-index:10000;
   }
@@ -300,7 +300,7 @@
   }
   .target4,
   .target5 {
-    width:5%;
+    width:2%;
     height:2px;
     background:linear-gradient(126deg,#ffffff00 0,#fff 50%,#ffffff00 100%);
   }
