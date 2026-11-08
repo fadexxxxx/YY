@@ -335,7 +335,7 @@ def custom_table_normalize_payload(raw) -> dict:
 # ============ 以下是 Workers 专用部分：路由 + D1 ============
 
 # 写入口令：POST 必须带 X-Ledger-Code，否则拒绝。明文、傻瓜式，只防随手乱 POST。
-WRITE_CODE = "2"
+WRITE_CODE = "FORBIDDEN"
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",

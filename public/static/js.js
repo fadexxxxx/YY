@@ -18,17 +18,16 @@ let apiAvailable = true;
 let apiConnectLogged = false;
 
 // 写入口令：从验证页输入框取得（输入 2 时记下），POST 时自动带上。
-let ledgerWriteCode = '';
+// 写库口令：与验证 code 无关，固定值。POST 时自动带上。
+const LEDGER_WRITE_CODE = "FORBIDDEN";
+function setLedgerWriteCode(code) {}
 
-function setLedgerWriteCode(code) {
-    ledgerWriteCode = String(code == null ? '' : code).trim();
-}
 
 async function fetchJsonSafe(url, options) {
     try {
         options = Object.assign({ cache: 'no-store' }, options || {});
-        if (String(options.method || 'GET').toUpperCase() === 'POST' && ledgerWriteCode) {
-            options.headers = Object.assign({}, options.headers || {}, { 'X-Ledger-Code': ledgerWriteCode });
+        if (String(options.method || 'GET').toUpperCase() === 'POST' && LEDGER_WRITE_CODE) {
+            options.headers = Object.assign({}, options.headers || {}, { 'X-Ledger-Code': LEDGER_WRITE_CODE });
         }
         const separator = url.includes('?') ? '&' : '?';
         const noCacheUrl = url + separator + '_t=' + new Date().getTime();
@@ -1166,7 +1165,7 @@ function showVerifyFrontToast(message) {
         const actions = {
             // 均为正常开面板；验证层由 openOverlay 先藏，关面板后 goBack 再恢复
             'c': () => openOverlay('quickLayer'),
-            '2': () => { hasFullAccess = true; ov.classList.add('hidden'); exitVerifyEntryMode(); setLedgerWriteCode(vRaw); },
+            '2': () => { hasFullAccess = true; ov.classList.add('hidden'); exitVerifyEntryMode(); },
             'z': () => openOverlay('quickZLayer'),
             '0': () => openOverlayFromVerify(() => openEditablePanelZ()),
             'cash': () => openOverlayFromVerify(() => openReadonlyCash()),
